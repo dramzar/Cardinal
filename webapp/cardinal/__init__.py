@@ -34,7 +34,7 @@ from cardinal.views import cardinal_auth
 from cardinal.views import cardinal_forms
 from cardinal.views import cardinal_network_toolkit
 from cardinal.views import cardinal_ssid
-from cardinal.views import cardinal_ssid_ops
+#from cardinal.views import cardinal_ssid_ops
 from cardinal.views import cardinal_visuals
 from datetime import timedelta
 from flask import Flask
@@ -55,5 +55,6 @@ Cardinal.register_blueprint(cardinal_auth.cardinal_auth)
 Cardinal.register_blueprint(cardinal_forms.cardinal_forms)
 Cardinal.register_blueprint(cardinal_network_toolkit.cardinal_network_toolkit)
 Cardinal.register_blueprint(cardinal_ssid.cardinal_ssid)
-Cardinal.register_blueprint(cardinal_ssid_ops.cardinal_ssid_ops)
+#Cardinal.register_blueprint(cardinal_ssid_ops.cardinal_ssid_ops)
 Cardinal.register_blueprint(cardinal_visuals.cardinal_visuals)
+
