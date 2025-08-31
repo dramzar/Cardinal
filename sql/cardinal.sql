@@ -98,6 +98,22 @@ CREATE TABLE `scout_jobs` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `rqworker_results`
+--
+
+DROP TABLE IF EXISTS `rqworker_results`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `rqworker_results` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `job_id` varchar(36) NOT NULL,
+  `result` text NOT NULL,
+  `created` timestamp default CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `ssids_24ghz`
 --
 

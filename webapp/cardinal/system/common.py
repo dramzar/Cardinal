@@ -49,10 +49,14 @@ class CardinalEnv():
     def __init__(self):
 
         # Ingest values from config file at CARDINALCONFIG
-        cardinalConfigFile = os.environ['CARDINALCONFIG']
-        self.cardinalConfig = ConfigParser()
-        self.cardinalConfig.read(cardinalConfigFile)
 
+        self.cardinalConfig = ConfigParser()
+        try:
+            cardinalConfigFile = os.environ['CARDINALCONFIG']
+        except:
+            cardinalConfigFile = "/opt/cardinal.ini"
+
+        self.cardinalConfig.read(cardinalConfigFile)
         # Create a dict() to hold tuning values
         self.tunings = dict()
 
@@ -1135,7 +1139,7 @@ class ToolkitJob(CardinalEnv):
         try:
             addToolkitJobCursor = conn.cursor()
             addToolkitJobCursor.execute("INSERT INTO network_toolkit_jobs (toolkit_job_command, toolkit_job_arguments, toolkit_job_duration, toolkit_job_result) \
-            VALUES (%s, %s, %s, %s)",(command, arguments, duration, result))
+            VALUES (%s, %s, %s, %s, %s)",(command, arguments, duration, result))
             addToolkitJobCursor.close()
         except Exception as e:
             return "ERROR: {}".format(e)
@@ -1283,8 +1287,25 @@ class AsyncOpsManager(CardinalEnv):
         '''
         Run an unit of asynchronous work (by function)
         '''
-        asyncResult = self.asyncQueue.enqueue(func, kwargs=args, retry=Retry(max=self.tunings["jobRetry"]))
+        asyncResult = self.asyncQueue.enqueue(func, kwargs=args, retry=Retry(max=self.tunings["jobRetry"]), on_success=reportSuccess)
         return asyncResult
+
+def reportSuccess(job, connection, result, *args, **kwargs):
+    cenv = CardinalEnv()
+    conn = cenv.sql()
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO rqworker_results (job_id, result) VALUES (%s,%s)", (job._id, result))
+        cursor-close()
+    except Exception as e:
+        return f"ERROR: {e}"
+    else:
+        conn.commit()
+
+#    with open('/var/log/cardinal/fetcher.log', 'a') as f:
+#        f.write(f"JobID:\t\t{job._id}\nConnection:\t{connection}\nResult:\t\t{result}\nArgs:\t\t{args}\nKwArgs:\t\t{kwargs}\n")
+
 
 def jsonResponse(level, message, **kwargs):
     '''
