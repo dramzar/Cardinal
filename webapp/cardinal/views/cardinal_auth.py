@@ -63,9 +63,9 @@ def login():
             login_user(user)
             return redirect(url_for('cardinal_auth_bp.dashboard'))
 
-        return render_template('index.html', error="Invalid user or password.")
+        return render_template('login.html', error="Invalid user or password.", username=username)
 
-    return render_template('index.html')
+    return render_template('login.html')
 
 @cardinal_auth.route("/logout")
 @login_required
@@ -82,7 +82,7 @@ def logout():
    logout_user()
    return redirect(url_for('cardinal_auth_bp.index'))
 
-@cardinal_auth_bp.route("/changepass", methods=["GET", "POST"])
+@cardinal_auth.route("/changepass", methods=["GET", "POST"])
 @login_required
 def changePassword():
     if request.method == "GET":
