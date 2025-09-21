@@ -38,6 +38,7 @@ from rq import Retry
 from scout import info
 from scout import ssid
 from scout import sys
+from flask_sqlalchemy import SQLAlchemy
 
 class CardinalEnv():
     '''
@@ -88,6 +89,8 @@ class CardinalEnv():
         else:
             self.tunings['dbPort'] = 3306
 
+        self.tunings['dbURI'] = f"mysql+pymysql://{self.tunings['dbUsername']}:{self.tunings['dbPassword']}@{self.tunings['dbServer']}:{self.tunings['dbPort']}/{self.tunings['dbName']}?charset=utf8mb4"
+
         if self.cardinalConfig.has_option('cardinal', 'flaskKey'):
             self.tunings['flaskKey'] = self.cardinalConfig.get('cardinal', 'flaskKey')
         else:
@@ -123,6 +126,8 @@ class CardinalEnv():
         else:
             self.tunings['jobRetry'] = 3
 
+        self.sqlalchemy = SQLAlchemy()
+
     def sql(self):
         '''
         Connection object for MySQLdb transactions.
@@ -157,6 +162,9 @@ class CardinalEnv():
         '''
         return self.tunings
 
+    def db(self):
+        return self.sqlalchemy
+
 class AccessPoint(CardinalEnv):
     '''
     Object that defines a Cisco access point under
@@ -188,7 +196,7 @@ class AccessPoint(CardinalEnv):
                 addApCursor.close()
             else:
                 addApCursor = conn.cursor()
-                addApCursor.execute("INSERT INTO access_points (ap_name, ap_ip, ap_subnetmask, ap_ssh_port, ap_ssh_username, ap_ssh_password, ap_snmp, ap_group_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", 
+                addApCursor.execute("INSERT INTO access_points (ap_name, ap_ip, ap_subnetmask, ap_ssh_port, ap_ssh_username, ap_ssh_password, ap_snmp, ap_group_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
                 (name, ip, subnetMask, sshPort, username, encryptedSshPassword, encryptedSnmpCommunity, groupId))
                 addApCursor.close()
         except Exception as e:
@@ -215,7 +223,7 @@ class AccessPoint(CardinalEnv):
                 return "ERROR: {}".format(e)
             else:
                 conn.commit()
-        
+
         if "ip" in kwargs:
             try:
                 updateApIpCursor = conn.cursor()
@@ -304,9 +312,9 @@ class AccessPoint(CardinalEnv):
                 deleteApCursor.execute("DELETE FROM access_points WHERE ap_name = %s", [kwargs["name"]])
             else:
                 deleteApCursor.execute("DELETE FROM access_points WHERE ap_id = %s", [id])
-            
+
             deleteApCursor.close()
-            
+
         except Exception as e:
             return "ERROR: {}".format(e)
         except MySQLdb.Error as e:
@@ -344,7 +352,7 @@ class AccessPoint(CardinalEnv):
                 else:
                     apInfoCursor.execute("SELECT ap_id,ap_group_id,ap_name,ap_ip,ap_subnetmask,ap_ssh_port,ap_ssh_username,ap_ssh_password,ap_snmp,ap_total_clients,ap_bandwidth,ap_mac_addr,ap_model,ap_serial,\
                     ap_location,ap_ios_info,ap_uptime FROM access_points WHERE ap_id = %s", [id])
-                    apInfo = apInfoCursor.fetchall()                    
+                    apInfo = apInfoCursor.fetchall()
 
             if "name" in kwargs:
                 if not secrets:
@@ -354,7 +362,7 @@ class AccessPoint(CardinalEnv):
                 else:
                     apInfoCursor.execute("SELECT ap_id,ap_group_id,ap_name,ap_ip,ap_subnetmask,ap_ssh_port,ap_ssh_username,ap_ssh_password,ap_snmp,ap_total_clients,ap_bandwidth,ap_mac_addr,ap_model,ap_serial,\
                     ap_location,ap_ios_info,ap_uptime FROM access_points WHERE ap_name = %s", [kwargs["name"]])
-                    apInfo = apInfoCursor.fetchall()    
+                    apInfo = apInfoCursor.fetchall()
 
             apInfoCursor.close()
 
@@ -572,7 +580,7 @@ class AccessPoint(CardinalEnv):
         Change access point IP via scout
         '''
         conn = self.sql()
-    
+
         # Get connection information for access point
         fetchInfo = self.info(id=id, secrets=True)
 
@@ -652,7 +660,7 @@ class AccessPointGroup(CardinalEnv):
                 deleteApGroupCursor.execute("DELETE FROM access_point_groups WHERE ap_group_name = %s", [kwargs["name"]])
             else:
                 deleteApGroupCursor.execute("DELETE FROM access_point_groups WHERE ap_group_id = %s", [id])
-            
+
             deleteApGroupCursor.close()
 
         except Exception as e:
@@ -729,7 +737,7 @@ class AccessPointGroup(CardinalEnv):
                 apGroupInfoCursor.execute("SELECT access_point_groups.ap_group_id, access_point_groups.ap_group_name, FORMAT(SUM(access_points.ap_total_clients),0) AS ap_group_total_clients FROM \
                 access_point_groups LEFT JOIN access_points ON access_point_groups.ap_group_id=access_points.ap_group_id WHERE access_point_groups.ap_group_id = %s", [id])
                 apGroupInfo = apGroupInfoCursor.fetchall()
-            
+
             if "name" in kwargs:
                 apGroupInfoCursor.execute("SELECT access_point_groups.ap_group_id, access_point_groups.ap_group_name, FORMAT(SUM(access_points.ap_total_clients),0) AS ap_group_total_clients FROM \
                 access_point_groups LEFT JOIN access_points ON access_point_groups.ap_group_id=access_points.ap_group_id WHERE access_point_groups.ap_group_name = %s", [kwargs["name"]])
@@ -739,7 +747,7 @@ class AccessPointGroup(CardinalEnv):
 
         except Exception as e:
             return "ERROR: {}".format(e)
-            
+
         else:
             if "struct" in kwargs:
                 if kwargs["struct"] == "dict":
@@ -817,7 +825,7 @@ class Ssid24Ghz(CardinalEnv):
                 else:
                     ssidInfoCursor.execute("SELECT ap_ssid_id, ap_ssid_name, ap_ssid_vlan, ap_ssid_wpa2, ap_ssid_bridge_id, ap_ssid_radio_id, ap_ssid_ethernet_id FROM ssids_24ghz WHERE ap_ssid_id = %s", [id])
                     ssidInfo = ssidInfoCursor.fetchall()
-            
+
             if "name" in kwargs:
                 if not secrets:
                     ssidInfoCursor.execute("SELECT ap_ssid_id, ap_ssid_name, ap_ssid_vlan, ap_ssid_bridge_id, ap_ssid_radio_id, ap_ssid_ethernet_id FROM ssids_24ghz WHERE ap_ssid_name = %s", [kwargs["name"]])
@@ -830,7 +838,7 @@ class Ssid24Ghz(CardinalEnv):
 
         except Exception as e:
             return "ERROR: {}".format(e)
-            
+
         else:
             return list(ssidInfo)
 
@@ -857,7 +865,7 @@ class Ssid5Ghz(CardinalEnv):
         try:
             addSsidCursor = conn.cursor()
             addSsidCursor.execute("INSERT INTO ssids_5ghz (ap_ssid_name, ap_ssid_vlan, ap_ssid_wpa2, ap_ssid_bridge_id, ap_ssid_radio_id, ap_ssid_ethernet_id) \
-            VALUES (%s, %s, %s, %s, %s, %s)", 
+            VALUES (%s, %s, %s, %s, %s, %s)",
             (name, vlan, encryptedWpa2, bridgeGroup, radioId, gigaId))
             addSsidCursor.close()
         except Exception as e:
@@ -907,7 +915,7 @@ class Ssid5Ghz(CardinalEnv):
                 else:
                     ssidInfoCursor.execute("SELECT ap_ssid_id, ap_ssid_name, ap_ssid_vlan, ap_ssid_wpa2, ap_ssid_bridge_id, ap_ssid_radio_id, ap_ssid_ethernet_id FROM ssids_5ghz WHERE ap_ssid_id = %s", [id])
                     ssidInfo = ssidInfoCursor.fetchall()
-            
+
             if "name" in kwargs:
                 if not secrets:
                     ssidInfoCursor.execute("SELECT ap_ssid_id, ap_ssid_name, ap_ssid_vlan, ap_ssid_bridge_id, ap_ssid_radio_id, ap_ssid_ethernet_id FROM ssids_5ghz WHERE ap_ssid_name = %s", [kwargs["name"]])
@@ -920,7 +928,7 @@ class Ssid5Ghz(CardinalEnv):
 
         except Exception as e:
             return "ERROR: {}".format(e)
-            
+
         else:
             return list(ssidInfo)
 
@@ -1002,7 +1010,7 @@ class Ssid24GhzRadius(CardinalEnv):
                     ssidInfoCursor.execute("SELECT ap_ssid_id, ap_ssid_name, ap_ssid_vlan, ap_ssid_bridge_id, ap_ssid_radio_id, ap_ssid_ethernet_id, ap_ssid_radius_server, \
                     ap_ssid_radius_secret, ap_ssid_authorization_port, ap_ssid_accounting_port, ap_ssid_radius_timeout, ap_ssid_radius_group, ap_ssid_radius_method_list FROM ssids_24ghz_radius WHERE ap_ssid_id = %s", [id])
                     ssidInfo = ssidInfoCursor.fetchall()
-            
+
             if "name" in kwargs:
                 if not secrets:
                     ssidInfoCursor.execute("SELECT ap_ssid_id, ap_ssid_name, ap_ssid_vlan, ap_ssid_bridge_id, ap_ssid_radio_id, ap_ssid_ethernet_id, ap_ssid_radius_server, \
@@ -1017,7 +1025,7 @@ class Ssid24GhzRadius(CardinalEnv):
 
         except Exception as e:
             return "ERROR: {}".format(e)
-            
+
         else:
             return list(ssidInfo)
 
@@ -1099,7 +1107,7 @@ class Ssid5GhzRadius(CardinalEnv):
                     ssidInfoCursor.execute("SELECT ap_ssid_id, ap_ssid_name, ap_ssid_vlan, ap_ssid_bridge_id, ap_ssid_radio_id, ap_ssid_ethernet_id, ap_ssid_radius_server, \
                     ap_ssid_radius_secret, ap_ssid_authorization_port, ap_ssid_accounting_port, ap_ssid_radius_timeout, ap_ssid_radius_group, ap_ssid_radius_method_list FROM ssids_5ghz_radius WHERE ap_ssid_id = %s", [id])
                     ssidInfo = ssidInfoCursor.fetchall()
-            
+
             if "name" in kwargs:
                 if not secrets:
                     ssidInfoCursor.execute("SELECT ap_ssid_id, ap_ssid_name, ap_ssid_vlan, ap_ssid_bridge_id, ap_ssid_radio_id, ap_ssid_ethernet_id, ap_ssid_radius_server, \
@@ -1114,7 +1122,7 @@ class Ssid5GhzRadius(CardinalEnv):
 
         except Exception as e:
             return "ERROR: {}".format(e)
-            
+
         else:
             return list(ssidInfo)
 
@@ -1187,7 +1195,7 @@ class ToolkitJob(CardinalEnv):
                 toolkitJobInfoCursor.close()
         except Exception as e:
             return "ERROR: {}".format(e)
-            
+
         else:
             return list(toolkitJobInfo)
 
@@ -1260,7 +1268,7 @@ class ScoutJob(CardinalEnv):
                 toolkitJobInfoCursor.close()
         except Exception as e:
             return "ERROR: {}".format(e)
-            
+
         else:
             return list(toolkitJobInfo)
 

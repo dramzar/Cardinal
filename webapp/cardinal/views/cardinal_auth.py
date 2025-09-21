@@ -28,56 +28,47 @@ SOFTWARE.
 
 from cardinal.system.common import CardinalEnv
 from cardinal.system.common import msgAuthFailed
+from cardinal.system.dbmodels import Users
 from flask import Blueprint
 from flask import render_template
 from flask import request
 from flask import redirect
 from flask import session
 from flask import url_for
+from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
 
 cardinal_auth = Blueprint('cardinal_auth_bp', __name__)
 
 @cardinal_auth.route("/")
 def index():
-    if session.get("username") is not None:
+    if current_user:
         return redirect(url_for('cardinal_auth_bp.dashboard'))
-    else:
-        return render_template("index.html")
+
+    return redirect(url_for('cardinal_auth_bp.login'))
 
 @cardinal_auth.route("/dashboard")
+@login_required
 def dashboard():
-    if session.get("username") is not None:
-        return render_template("dashboard.html")
-    else:
-        return msgAuthFailed, 401
+    return render_template("dashboard.html")
 
-@cardinal_auth.route("/login", methods=['POST'])
+@cardinal_auth.route("/login", methods=['GET', 'POST'])
 def login():
-    username = request.form['username']
-    password = request.form['password']
-    conn = CardinalEnv().sql()
-    loginCursor = conn.cursor()
-    loginSql = loginCursor.execute("SELECT username,password FROM users WHERE username = %s", [username])
-    userInfo = loginCursor.fetchall()
-    loginCursor.close()
-    conn.close()
-    if loginSql > 0:
-        for info in userInfo:
-            dbUsername = info[0]
-            dbHash = info[1]
-    else:
-        return msgAuthFailed, 401
+    if request.method == "POST":
+        username = request.form['username']
+        password = request.form['password']
+        user = Users.query.filter_by(username=username).first()
 
-    if check_password_hash(dbHash,password):
-        session['username'] = username
-        return redirect(url_for('cardinal_auth_bp.dashboard'))
-    elif dbUsername is None:
-        return msgAuthFailed, 401
-    else:
-        return msgAuthFailed, 401
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            return redirect(url_for('cardinal_auth_bp.dashboard'))
+
+        return render_template('index.html', error="Invalid user or password.")
+
+    return render_template('index.html')
 
 @cardinal_auth.route("/logout")
+@login_required
 def logout():
    session.pop('username', None)
    session.pop('apId', None)
@@ -88,4 +79,11 @@ def logout():
    session.pop('apTotalClients', None)
    session.pop('apBandwidth', None)
    session.pop('apModel', None)
+   logout_user()
    return redirect(url_for('cardinal_auth_bp.index'))
+
+@cardinal_auth_bp.route("/changepass", methods=["GET", "POST"])
+@login_required
+def changePassword():
+    if request.method == "GET":
+        return render_template("change_password.html")
