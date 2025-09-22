@@ -36,7 +36,7 @@ from flask import redirect
 from flask import session
 from flask import url_for
 from flask_login import login_user, logout_user, login_required, current_user
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 cardinal_auth = Blueprint('cardinal_auth_bp', __name__)
 
@@ -87,3 +87,22 @@ def logout():
 def changePassword():
     if request.method == "GET":
         return render_template("change_password.html")
+
+    oldpass = request.form['oldpass']
+    newpass = request.form['newpass']
+    newpass2 = request.form['newpass2']
+
+    if not check_password_hash(current_user.password, oldpass):
+        return render_template("change_password.html", error="Old password does not match.")
+
+    if len(newpass) < 8:
+        return render_template("change_password.html", error="New password not long enough. Min: 8")
+
+    if newpass != newpass2:
+        return render_template("change_password.html", error="New passwords does not match.")
+
+    current_user.password = generate_password_hash(newpass, method="pbkdf2:sha256")
+    from cardinal import cardinalEnv
+    cardinalEnv.db().session.commit()
+
+    return redirect(url_for("cardinal_auth_bp.dashboard"))
