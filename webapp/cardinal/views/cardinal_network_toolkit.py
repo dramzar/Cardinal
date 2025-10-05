@@ -27,7 +27,7 @@ SOFTWARE.
 '''
 
 from cardinal.system.common import jsonResponse
-from cardinal.system.common import msgAuthFailed
+
 from cardinal.system.common import ToolkitJob
 from cardinal.system.common import AsyncOpsManager
 from cardinal.system.toolkit import ping

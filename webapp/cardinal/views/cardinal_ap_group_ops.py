@@ -31,7 +31,7 @@ import time
 from cardinal.system.common import printCompletionTime
 #from cardinal.system.common import cipherSuite
 #from cardinal.system.common import processor
-from cardinal.system.common import msgAuthFailed
+
 from flask import Blueprint
 from flask import render_template
 from flask import request

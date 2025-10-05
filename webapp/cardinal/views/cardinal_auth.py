@@ -27,7 +27,7 @@ SOFTWARE.
 '''
 
 from cardinal.system.common import CardinalEnv
-from cardinal.system.common import msgAuthFailed
+
 from cardinal.system.dbmodels import Users
 from flask import Blueprint
 from flask import render_template

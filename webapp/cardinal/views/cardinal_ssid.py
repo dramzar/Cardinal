@@ -27,11 +27,11 @@ SOFTWARE.
 '''
 
 from cardinal.system.common import jsonResponse
-from cardinal.system.common import Ssid24Ghz
-from cardinal.system.common import Ssid5Ghz
-from cardinal.system.common import Ssid24GhzRadius
-from cardinal.system.common import Ssid5GhzRadius
-from cardinal.system.common import msgAuthFailed
+from cardinal.system.accesspoints import Ssid24Ghz
+from cardinal.system.accesspoints import Ssid5Ghz
+from cardinal.system.accesspoints import Ssid24GhzRadius
+from cardinal.system.accesspoints import Ssid5GhzRadius
+
 from cardinal.system.common import msgResourceAdded
 from cardinal.system.common import msgResourceDeleted
 from flask import Blueprint

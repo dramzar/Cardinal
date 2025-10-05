@@ -26,7 +26,7 @@ SOFTWARE.
 
 '''
 
-from cardinal.system.common import AccessPoint
+from cardinal.system.accesspoints import AccessPoint
 from cardinal.system.common import AsyncOpsManager
 from cardinal.system.common import msgAuthFailed
 from cardinal.system.common import msgResourceAdded

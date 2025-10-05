@@ -26,7 +26,7 @@ SOFTWARE.
 
 '''
 
-from cardinal.system.common import AccessPointGroup
+from cardinal.system.accesspoints import AccessPointGroup
 from cardinal.system.common import jsonResponse
 from cardinal.system.common import msgAuthFailed
 from cardinal.system.common import msgResourceAdded

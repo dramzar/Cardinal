@@ -26,13 +26,13 @@ SOFTWARE.
 
 '''
 
-from cardinal.system.common import AccessPoint
-from cardinal.system.common import AccessPointGroup
-from cardinal.system.common import Ssid24Ghz
-from cardinal.system.common import Ssid5Ghz
-from cardinal.system.common import Ssid24GhzRadius
-from cardinal.system.common import Ssid5GhzRadius
-from cardinal.system.common import msgAuthFailed
+from cardinal.system.accesspoints import AccessPoint
+from cardinal.system.accesspoints import AccessPointGroup
+from cardinal.system.accesspoints import Ssid24Ghz
+from cardinal.system.accesspoints import Ssid5Ghz
+from cardinal.system.accesspoints import Ssid24GhzRadius
+from cardinal.system.accesspoints import Ssid5GhzRadius
+
 from flask import Blueprint
 from flask import render_template
 from flask import redirect
