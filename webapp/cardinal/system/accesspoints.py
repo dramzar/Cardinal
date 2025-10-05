@@ -24,6 +24,7 @@ SOFTWARE.
 
 '''
 import MySQLdb
+import json
 from cardinal.system.common import CardinalEnv
 
 
