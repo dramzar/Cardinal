@@ -38,118 +38,106 @@ from flask import request
 from flask import redirect
 from flask import session
 from flask import url_for
+from flask_login import login_required
 from scout import sys
 
 cardinal_ap_group_ops = Blueprint('cardinal_ap_group_ops_bp', __name__)
+@cardinal_ap_group_ops.before_request
+@login_required
+def before_request():
+    pass
 
 @cardinal_ap_group_ops.route("/get-ap-group-tftp-backup", methods=["GET", "POST"])
 def configApTftpBackup():
     if request.method == 'GET':
-        if session.get("username") is not None:
-            status = request.args.get('status')
-            completionTime = request.args.get('completionTime')
-            return render_template("config-ap-group-tftp-backup.html", status=status, completionTime=completionTime)
-        else:
-            return msgAuthFailed, 401
+        status = request.args.get('status')
+        completionTime = request.args.get('completionTime')
+        return render_template("config-ap-group-tftp-backup.html", status=status, completionTime=completionTime)
+
     elif request.method == 'POST':
-        if session.get("username") is not None:
-            apGroupId = session.get("apGroupId")
-            apGroupName = session.get("apGroupName")
-            if apGroupId is None:
-                apGroupId = request.form["ap_group_id"]
-            tftpIp = request.form["tftp_ip"]
-            apList = apGroupIterator(apGroupId=apGroupId, tftpIp=tftpIp)
-            startTime = time.time()
-            task = processor(operation=sys.scoutTftpBackup, apInfo=apList)
-            endTime = time.time() - startTime
-            status = "INFO: Config Backup for AP Group {} Successfully Initiated!".format(apGroupName)
-            completionTime = printCompletionTime(endTime)
-            return redirect(url_for('cardinal_ap_group_ops_bp.configApTftpBackup', status=status, completionTime=completionTime))
-        else:
-            return msgAuthFailed, 401
+        apGroupId = session.get("apGroupId")
+        apGroupName = session.get("apGroupName")
+        if apGroupId is None:
+            apGroupId = request.form["ap_group_id"]
+        tftpIp = request.form["tftp_ip"]
+        apList = apGroupIterator(apGroupId=apGroupId, tftpIp=tftpIp)
+        startTime = time.time()
+        task = processor(operation=sys.scoutTftpBackup, apInfo=apList)
+        endTime = time.time() - startTime
+        status = "INFO: Config Backup for AP Group {} Successfully Initiated!".format(apGroupName)
+        completionTime = printCompletionTime(endTime)
+        return redirect(url_for('cardinal_ap_group_ops_bp.configApTftpBackup', status=status, completionTime=completionTime))
 
 @cardinal_ap_group_ops.route("/config-ap-group-http", methods=["GET"])
+@login_required
 def configApHttp():
-    if session.get("username") is not None:
-        completionTime = request.args.get('completionTime')
-        status = request.args.get('status')
-        return render_template("config-ap-group-http.html", status=status, completionTime=completionTime)
-    else:
-        return msgAuthFailed, 401
+    completionTime = request.args.get('completionTime')
+    status = request.args.get('status')
+    return render_template("config-ap-group-http.html", status=status, completionTime=completionTime)
 
 @cardinal_ap_group_ops.route("/enable-ap-group-http", methods=["POST"])
+@login_required
 def enableApHttp():
-    if session.get("username") is not None:
-        apGroupId = session.get('apGroupId')
-        apGroupName = session.get('apGroupName')
-        if apGroupId is None:
-            apGroupId = request.form["ap_group_id"]
-        apList = apGroupIterator(apGroupId=apGroupId)
-        startTime = time.time()
-        task = processor(operation=sys.scoutEnableHttp, apInfo=apList)
-        endTime = time.time() - startTime
-        status = "INFO: HTTP Server for AP Group {} Successfully Enabled!".format(apGroupName)
-        completionTime = printCompletionTime(endTime)
-        return redirect(url_for('cardinal_ap_group_ops_bp.configApHttp', status=status, completionTime=completionTime))
-    else:
-        return msgAuthFailed, 401
+    apGroupId = session.get('apGroupId')
+    apGroupName = session.get('apGroupName')
+    if apGroupId is None:
+        apGroupId = request.form["ap_group_id"]
+    apList = apGroupIterator(apGroupId=apGroupId)
+    startTime = time.time()
+    task = processor(operation=sys.scoutEnableHttp, apInfo=apList)
+    endTime = time.time() - startTime
+    status = "INFO: HTTP Server for AP Group {} Successfully Enabled!".format(apGroupName)
+    completionTime = printCompletionTime(endTime)
+    return redirect(url_for('cardinal_ap_group_ops_bp.configApHttp', status=status, completionTime=completionTime))
 
 @cardinal_ap_group_ops.route("/disable-ap-group-http", methods=["POST"])
+@login_required
 def disableApHttp():
-    if session.get("username") is not None:
-        apGroupId = session.get('apGroupId')
-        apGroupName = session.get('apGroupName')
-        if apGroupId is None:
-            apGroupId = request.form["ap_group_id"]
-        apList = apGroupIterator(apGroupId=apGroupId)
-        startTime = time.time()
-        task = processor(operation=sys.scoutDisableHttp, apInfo=apList)
-        endTime = time.time() - startTime
-        status = "INFO: HTTP Server for AP Group {} Successfully Disabled!".format(apGroupName)
-        completionTime = printCompletionTime(endTime)
-        return redirect(url_for('cardinal_ap_group_ops_bp.configApHttp', status=status, completionTime=completionTime))
-    else:
-        return msgAuthFailed, 401
+    apGroupId = session.get('apGroupId')
+    apGroupName = session.get('apGroupName')
+    if apGroupId is None:
+        apGroupId = request.form["ap_group_id"]
+    apList = apGroupIterator(apGroupId=apGroupId)
+    startTime = time.time()
+    task = processor(operation=sys.scoutDisableHttp, apInfo=apList)
+    endTime = time.time() - startTime
+    status = "INFO: HTTP Server for AP Group {} Successfully Disabled!".format(apGroupName)
+    completionTime = printCompletionTime(endTime)
+    return redirect(url_for('cardinal_ap_group_ops_bp.configApHttp', status=status, completionTime=completionTime))
 
 @cardinal_ap_group_ops.route("/config-ap-group-snmp", methods=["GET"])
+@login_required
 def configApSnmp():
-    if session.get("username") is not None:
-        completionTime = request.args.get('completionTime')
-        status = request.args.get('status')
-        return render_template("config-ap-group-snmp.html", status=status, completionTime=completionTime)
-    else:
-        return msgAuthFailed, 401
+    completionTime = request.args.get('completionTime')
+    status = request.args.get('status')
+    return render_template("config-ap-group-snmp.html", status=status, completionTime=completionTime)
 
 @cardinal_ap_group_ops.route("/enable-ap-group-snmp", methods=["POST"])
+@login_required
 def enableApSnmp():
-    if session.get("username") is not None:
-        apGroupId = session.get('apGroupId')
-        apGroupName = session.get('apGroupName')
-        if apGroupId is None:
-            apGroupId = request.form["ap_group_id"]
-        apList = apGroupIterator(apGroupId=apGroupId, snmp="True")
-        startTime = time.time()
-        task = processor(operation=sys.scoutEnableSnmp, apInfo=apList)
-        endTime = time.time() - startTime
-        status = "INFO: SNMP Server for AP Group {} Successfully Enabled!".format(apGroupName)
-        completionTime = printCompletionTime(endTime)
-        return redirect(url_for('cardinal_ap_group_ops_bp.configApSnmp', status=status, completionTime=completionTime))
-    else:
-        return msgAuthFailed, 401
+    apGroupId = session.get('apGroupId')
+    apGroupName = session.get('apGroupName')
+    if apGroupId is None:
+        apGroupId = request.form["ap_group_id"]
+    apList = apGroupIterator(apGroupId=apGroupId, snmp="True")
+    startTime = time.time()
+    task = processor(operation=sys.scoutEnableSnmp, apInfo=apList)
+    endTime = time.time() - startTime
+    status = "INFO: SNMP Server for AP Group {} Successfully Enabled!".format(apGroupName)
+    completionTime = printCompletionTime(endTime)
+    return redirect(url_for('cardinal_ap_group_ops_bp.configApSnmp', status=status, completionTime=completionTime))
 
 @cardinal_ap_group_ops.route("/disable-ap-group-snmp", methods=["POST"])
+@login_required
 def disableApSnmp():
-    if session.get("username") is not None:
-        apGroupId = session.get('apGroupId')
-        apGroupName = session.get('apGroupName')
-        if apGroupId is None:
-            apGroupId = request.form["ap_group_id"]
-        apList = apGroupIterator(apGroupId=apGroupId)
-        startTime = time.time()
-        task = processor(operation=sys.scoutDisableSnmp, apInfo=apList)
-        endTime = time.time() - startTime
-        status = "INFO: SNMP Server for AP Group {} Successfully Disabled!".format(apGroupName)
-        completionTime = printCompletionTime(endTime)
-        return redirect(url_for('cardinal_ap_group_ops_bp.configApSnmp', status=status, completionTime=completionTime))
-    else:
-        return msgAuthFailed, 401
+    apGroupId = session.get('apGroupId')
+    apGroupName = session.get('apGroupName')
+    if apGroupId is None:
+        apGroupId = request.form["ap_group_id"]
+    apList = apGroupIterator(apGroupId=apGroupId)
+    startTime = time.time()
+    task = processor(operation=sys.scoutDisableSnmp, apInfo=apList)
+    endTime = time.time() - startTime
+    status = "INFO: SNMP Server for AP Group {} Successfully Disabled!".format(apGroupName)
+    completionTime = printCompletionTime(endTime)
+    return redirect(url_for('cardinal_ap_group_ops_bp.configApSnmp', status=status, completionTime=completionTime))

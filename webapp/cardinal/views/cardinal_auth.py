@@ -54,18 +54,20 @@ def dashboard():
 
 @cardinal_auth.route("/login", methods=['GET', 'POST'])
 def login():
-    if request.method == "POST":
-        username = request.form['username']
-        password = request.form['password']
-        user = Users.query.filter_by(username=username).first()
+    if request.method == "GET":
+        return render_template('login.html')
 
-        if user and check_password_hash(user.password, password):
-            login_user(user)
-            return redirect(url_for('cardinal_auth_bp.dashboard'))
+    username = request.form['username']
+    password = request.form['password']
+    user = Users.query.filter_by(username=username).first()
 
-        return render_template('login.html', error="Invalid user or password.", username=username)
+    if user and check_password_hash(user.password, password):
+        login_user(user)
+        return redirect(url_for('cardinal_auth_bp.dashboard'))
 
-    return render_template('login.html')
+    return render_template('login.html', error="Invalid user or password.", username=username)
+
+
 
 @cardinal_auth.route("/logout")
 @login_required
