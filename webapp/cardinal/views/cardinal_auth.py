@@ -27,8 +27,8 @@ SOFTWARE.
 '''
 
 from cardinal.system.common import CardinalEnv
-
-from cardinal.system.dbmodels import Users
+from cardinal.system.common import User
+#from cardinal.system.dbmodels import Users
 from flask import Blueprint
 from flask import render_template
 from flask import request
@@ -59,7 +59,7 @@ def login():
 
     username = request.form['username']
     password = request.form['password']
-    user = Users.query.filter_by(username=username).first()
+    user = CardinalEnv().users().get(username)
 
     if user and check_password_hash(user.password, password):
         login_user(user)
@@ -104,7 +104,5 @@ def changePassword():
         return render_template("change_password.html", error="New passwords does not match.")
 
     current_user.password = generate_password_hash(newpass, method="pbkdf2:sha256")
-    from cardinal import cardinalEnv
-    cardinalEnv.db().session.commit()
 
     return redirect(url_for("cardinal_auth_bp.dashboard"))

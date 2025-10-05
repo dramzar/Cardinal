@@ -27,6 +27,7 @@ SOFTWARE.
 '''
 
 from cardinal.system.common import CardinalEnv
+from cardinal.system.common import User
 
 from datetime import timedelta
 from flask import Flask
@@ -47,18 +48,18 @@ Cardinal.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 login_manager = LoginManager()
 login_manager.init_app(Cardinal)
 login_manager.login_view = 'cardinal_auth_bp.login'
-cardinalEnv.db().init_app(Cardinal)
+#cardinalEnv.db().init_app(Cardinal)
 
-from cardinal.system.dbmodels import Users
+#from cardinal.system.dbmodels import Users
 
 # Create database
-with Cardinal.app_context():
-    cardinalEnv.db().create_all()
+#with Cardinal.app_context():
+#    cardinalEnv.db().create_all()
 
 # Load user for Flask-Login
 @login_manager.user_loader
-def load_user(user_id):
-    return Users.query.get(int(user_id))
+def load_user(user_name):
+    return cardinalEnv.users().get(user_name)
 
 # Declare Flask blueprints
 from cardinal.views import cardinal_ap_group

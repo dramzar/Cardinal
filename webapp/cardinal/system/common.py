@@ -38,7 +38,7 @@ from rq import Retry
 from scout import info
 from scout import ssid
 from scout import sys
-from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 
 class CardinalEnv():
     '''
@@ -126,7 +126,7 @@ class CardinalEnv():
         else:
             self.tunings['jobRetry'] = 3
 
-        self.sqlalchemy = SQLAlchemy()
+
 
     def sql(self):
         '''
@@ -162,8 +162,20 @@ class CardinalEnv():
         '''
         return self.tunings
 
-    def db(self):
-        return self.sqlalchemy
+    def users(self):
+        '''
+        List of users
+        '''
+        conn = self.sql()
+        usercurs = conn.cursor()
+        usercurs.execute("SELECT username, password FROM users")
+        l = {}
+        for user in usercurs.fetchall():
+            l[user[0]] = User(user[0], user[1])
+
+        usercurs.close()
+        return l
+
 
 class ToolkitJob(CardinalEnv):
     '''
@@ -390,3 +402,11 @@ def printCompletionTime(endTime):
     '''
     completionTime = "INFO: Group Operation Completed In: {}".format(endTime)
     return completionTime
+
+class User(UserMixin):
+    def __init__(self, username, password):
+        self.id = username
+        self.password = password
+
+    def savePassword(self):
+        pass
