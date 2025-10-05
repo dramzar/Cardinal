@@ -27,6 +27,40 @@ SOFTWARE.
 '''
 
 from cardinal.system.common import CardinalEnv
+from cardinal.system.common import User
+
+from datetime import timedelta
+from flask import Flask
+from flask_login import LoginManager
+
+
+# Intialize a CardinalEnv() object
+cardinalEnv = CardinalEnv()
+
+
+# Initialize a Flask() object and configure using Cardinal settings
+Cardinal = Flask(__name__, static_folder='frontend')
+Cardinal.secret_key = cardinalEnv.config()["flaskKey"]
+Cardinal.permanent_session_lifetime = int(cardinalEnv.config()["sessionTimeout"])
+
+
+login_manager = LoginManager()
+login_manager.init_app(Cardinal)
+login_manager.login_view = 'cardinal_auth_bp.login'
+#cardinalEnv.db().init_app(Cardinal)
+
+#from cardinal.system.dbmodels import Users
+
+# Create database
+#with Cardinal.app_context():
+#    cardinalEnv.db().create_all()
+
+# Load user for Flask-Login
+@login_manager.user_loader
+def load_user(user_name):
+    return cardinalEnv.users().get(user_name)
+
+# Declare Flask blueprints
 from cardinal.views import cardinal_ap_group
 from cardinal.views import cardinal_ap_group_ops
 from cardinal.views import cardinal_ap
@@ -36,18 +70,7 @@ from cardinal.views import cardinal_network_toolkit
 from cardinal.views import cardinal_ssid
 #from cardinal.views import cardinal_ssid_ops
 from cardinal.views import cardinal_visuals
-from datetime import timedelta
-from flask import Flask
 
-# Intialize a CardinalEnv() object
-cardinalEnv = CardinalEnv()
-
-# Initialize a Flask() object and configure using Cardinal settings
-Cardinal = Flask(__name__, static_folder='frontend')
-Cardinal.secret_key = cardinalEnv.config()["flaskKey"]
-Cardinal.permanent_session_lifetime = int(cardinalEnv.config()["sessionTimeout"])
-
-# Declare Flask blueprints
 Cardinal.register_blueprint(cardinal_ap_group.cardinal_ap_group)
 Cardinal.register_blueprint(cardinal_ap_group_ops.cardinal_ap_group_ops)
 Cardinal.register_blueprint(cardinal_ap.cardinal_ap)
@@ -57,4 +80,3 @@ Cardinal.register_blueprint(cardinal_network_toolkit.cardinal_network_toolkit)
 Cardinal.register_blueprint(cardinal_ssid.cardinal_ssid)
 #Cardinal.register_blueprint(cardinal_ssid_ops.cardinal_ssid_ops)
 Cardinal.register_blueprint(cardinal_visuals.cardinal_visuals)
-

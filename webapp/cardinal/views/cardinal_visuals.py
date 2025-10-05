@@ -26,114 +26,91 @@ SOFTWARE.
 
 '''
 
-from cardinal.system.common import AccessPoint
-from cardinal.system.common import AccessPointGroup
-from cardinal.system.common import Ssid24Ghz
-from cardinal.system.common import Ssid5Ghz
-from cardinal.system.common import Ssid24GhzRadius
-from cardinal.system.common import Ssid5GhzRadius
-from cardinal.system.common import msgAuthFailed
+from cardinal.system.accesspoints import AccessPoint
+from cardinal.system.accesspoints import AccessPointGroup
+from cardinal.system.accesspoints import Ssid24Ghz
+from cardinal.system.accesspoints import Ssid5Ghz
+from cardinal.system.accesspoints import Ssid24GhzRadius
+from cardinal.system.accesspoints import Ssid5GhzRadius
+
 from flask import Blueprint
 from flask import render_template
 from flask import redirect
 from flask import session
 from flask import url_for
+from flask_login import login_required
 
 cardinal_visuals = Blueprint('cardinal_visuals_bp', __name__)
+@cardinal_visuals.before_request
+@login_required
+def before_request():
+    pass
 
 @cardinal_visuals.route("/api/v1/metrics", methods=["GET"])
 def cardinalMetrics():
-    if session.get("username") is not None:
-        totalAps = len(AccessPoint().info(struct="dict"))
-        totalApGroups = len(AccessPointGroup().info(struct="dict"))
-        totalSsids24Ghz = len(Ssid24Ghz().info(struct="dict"))
-        totalSsids5Ghz = len(Ssid5Ghz().info(struct="dict"))
-        totalSsids24GhzRadius = len(Ssid24GhzRadius().info(struct="dict"))
-        totalSsids5GhzRadius = len(Ssid5GhzRadius().info(struct="dict"))
+    totalAps = len(AccessPoint().info(struct="dict"))
+    totalApGroups = len(AccessPointGroup().info(struct="dict"))
+    totalSsids24Ghz = len(Ssid24Ghz().info(struct="dict"))
+    totalSsids5Ghz = len(Ssid5Ghz().info(struct="dict"))
+    totalSsids24GhzRadius = len(Ssid24GhzRadius().info(struct="dict"))
+    totalSsids5GhzRadius = len(Ssid5GhzRadius().info(struct="dict"))
 
-        # Calculate total number of SSIDs registered
-        totalSsids = totalSsids24Ghz + totalSsids5Ghz + totalSsids24GhzRadius + totalSsids5GhzRadius
+    # Calculate total number of SSIDs registered
+    totalSsids = totalSsids24Ghz + totalSsids5Ghz + totalSsids24GhzRadius + totalSsids5GhzRadius
 
-        # TODO: Maybe it would be better to implement a totalClients count
-        # at the AccessPoint() level? Not sure if this is the best way.
-        # Calculate total number of clients associated
-        totalApClients = AccessPoint().info(struct="dict")
+    # TODO: Maybe it would be better to implement a totalClients count
+    # at the AccessPoint() level? Not sure if this is the best way.
+    # Calculate total number of clients associated
+    totalApClients = AccessPoint().info(struct="dict")
 
-        # Store client totals in a tuple for sum()
-        storeTotalClients = ()
+    # Store client totals in a tuple for sum()
+    storeTotalClients = ()
 
-        for a in totalApClients:
-            storeTotalClients = storeTotalClients + (int(a["ap_total_clients"]),)
+    for a in totalApClients:
+        storeTotalClients = storeTotalClients + (int(a["ap_total_clients"]),)
 
-        totalClients = sum(storeTotalClients)
-        
-        # Populate dict() and then convert to JSON
-        metricsDict = dict(access_points=totalAps, access_point_groups=totalApGroups, total_clients=totalClients, total_ssids=totalSsids, ssids_24ghz=totalSsids24Ghz, ssids_5ghz=totalSsids5Ghz,
-                        ssids_24ghz_radius=totalSsids24GhzRadius, ssids_5ghz_radius=totalSsids5GhzRadius)
-        
-        return metricsDict
+    totalClients = sum(storeTotalClients)
+
+    # Populate dict() and then convert to JSON
+    metricsDict = dict(access_points=totalAps, access_point_groups=totalApGroups, total_clients=totalClients, total_ssids=totalSsids, ssids_24ghz=totalSsids24Ghz, ssids_5ghz=totalSsids5Ghz,
+                    ssids_24ghz_radius=totalSsids24GhzRadius, ssids_5ghz_radius=totalSsids5GhzRadius)
+
+    return metricsDict
 
 @cardinal_visuals.route("/total-clients", methods=["GET"])
 def totalClients():
-    if session.get("username") is not None:
-        return render_template("total-clients.html")
-    else:
-        return msgAuthFailed, 401
+    return render_template("total-clients.html")
 
 @cardinal_visuals.route("/total-aps", methods=["GET"])
 def totalAps():
-    if session.get("username") is not None:
-        return render_template("total-aps.html")
-    else:
-        return msgAuthFailed, 401
+    return render_template("total-aps.html")
 
 @cardinal_visuals.route("/total-ssids", methods=["GET"])
 def totalSsids():
-    if session.get("username") is not None:
-        return render_template("total-ssids.html")
-    else:
-        return msgAuthFailed, 401
+    return render_template("total-ssids.html")
 
 @cardinal_visuals.route("/total-ap-groups", methods=["GET"])
 def totalApGroups():
-    if session.get("username") is not None:
-        return render_template("total-ap-groups.html")
-    else:
-        return msgAuthFailed, 401
+    return render_template("total-ap-groups.html")
 
 @cardinal_visuals.route("/total-ap-bandwidth", methods=["GET"])
 def totalApBandwidth():
-    if session.get("username") is not None:
-        return render_template("total-ap-bandwidth.html")
-    else:
-        return msgAuthFailed, 401
+    return render_template("total-ap-bandwidth.html")
 
 @cardinal_visuals.route("/total-ap-clients", methods=["GET"])
 def totalApClients():
-    if session.get("username") is not None:
-        return render_template("total-ap-clients.html")
-    else:
-        return msgAuthFailed, 401
+    return render_template("total-ap-clients.html")
 
 @cardinal_visuals.route("/ap-ip-address", methods=["GET"])
 def apIpAddress():
-    if session.get("username") is not None:
-        return render_template("ap-ip-address.html")
-    else:
-        return msgAuthFailed, 401
+    return render_template("ap-ip-address.html")
 
 @cardinal_visuals.route("/ap-model", methods=["GET"])
 def apModel():
-    if session.get("username") is not None:
-        return render_template("ap-model.html")
-    else:
-        return msgAuthFailed, 401
+    return render_template("ap-model.html")
 
 @cardinal_visuals.route("/total-ap-group-clients", methods=["GET"])
 def totalApGroupClients():
-    if session.get("username") is not None:
-        apGroupId = session.get("apGroupId")
-        totalApGroupClients = AccessPointGroup().info(id=apGroupId, struct="dict")[0]["ap_group_total_clients"]
-        return render_template('total-ap-group-clients.html', totalApGroupClients=totalApGroupClients)
-    else:
-        return msgAuthFailed, 401
+    apGroupId = session.get("apGroupId")
+    totalApGroupClients = AccessPointGroup().info(id=apGroupId, struct="dict")[0]["ap_group_total_clients"]
+    return render_template('total-ap-group-clients.html', totalApGroupClients=totalApGroupClients)
