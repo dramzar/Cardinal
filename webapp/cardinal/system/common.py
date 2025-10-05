@@ -89,7 +89,6 @@ class CardinalEnv():
         else:
             self.tunings['dbPort'] = 3306
 
-        self.tunings['dbURI'] = f"mysql+pymysql://{self.tunings['dbUsername']}:{self.tunings['dbPassword']}@{self.tunings['dbServer']}:{self.tunings['dbPort']}/{self.tunings['dbName']}?charset=utf8mb4"
 
         if self.cardinalConfig.has_option('cardinal', 'flaskKey'):
             self.tunings['flaskKey'] = self.cardinalConfig.get('cardinal', 'flaskKey')
@@ -125,7 +124,6 @@ class CardinalEnv():
             self.tunings['jobRetry'] = int(self.cardinalConfig.get('cardinal', 'jobRetry'))
         else:
             self.tunings['jobRetry'] = 3
-
 
 
     def sql(self):
@@ -340,31 +338,14 @@ class AsyncOpsManager(CardinalEnv):
         conn = Redis(host=self.tunings["redisServer"], port=self.tunings["redisPort"])
 
         # Establish Redis queue for asynchronous work
-        self.asyncQueue = Queue(connection=conn)
+        self.asyncQueue = Queue('cardinal', connection=conn)
 
     def run(self, func, args):
         '''
         Run an unit of asynchronous work (by function)
         '''
-        asyncResult = self.asyncQueue.enqueue(func, kwargs=args, retry=Retry(max=self.tunings["jobRetry"]), on_success=reportSuccess)
+        asyncResult = self.asyncQueue.enqueue(func, kwargs=args, retry=Retry(max=self.tunings["jobRetry"]))
         return asyncResult
-
-def reportSuccess(job, connection, result, *args, **kwargs):
-    cenv = CardinalEnv()
-    conn = cenv.sql()
-
-    try:
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO rqworker_results (job_id, result) VALUES (%s,%s)", (job._id, result))
-        cursor-close()
-    except Exception as e:
-        return f"ERROR: {e}"
-    else:
-        conn.commit()
-
-#    with open('/var/log/cardinal/fetcher.log', 'a') as f:
-#        f.write(f"JobID:\t\t{job._id}\nConnection:\t{connection}\nResult:\t\t{result}\nArgs:\t\t{args}\nKwArgs:\t\t{kwargs}\n")
-
 
 def jsonResponse(level, message, **kwargs):
     '''

@@ -42,8 +42,7 @@ cardinalEnv = CardinalEnv()
 Cardinal = Flask(__name__, static_folder='frontend')
 Cardinal.secret_key = cardinalEnv.config()["flaskKey"]
 Cardinal.permanent_session_lifetime = int(cardinalEnv.config()["sessionTimeout"])
-Cardinal.config["SQLALCHEMY_DATABASE_URI"] = cardinalEnv.config()["dbURI"]
-Cardinal.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 
 login_manager = LoginManager()
 login_manager.init_app(Cardinal)

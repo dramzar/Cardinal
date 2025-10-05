@@ -26,7 +26,9 @@ SOFTWARE.
 import MySQLdb
 import json
 from cardinal.system.common import CardinalEnv
-
+from scout import info as scoutInfo
+from scout import ssid as scoutSsid
+from scout import sys as scoutSys
 
 class AccessPoint(CardinalEnv):
     '''
@@ -242,8 +244,8 @@ class AccessPoint(CardinalEnv):
         changeApIp = self.info(id=id, secrets=True)
 
         # Invoke scout to execute change IP operation
-        sys.scoutChangeIp(ip=changeApIp[0]["ap_ip"], username=changeApIp[0]["ap_ssh_username"], \
-        password=self.encryption(input=changeApIp[0]["ap_ssh_password"], action="decrypt"), newIp=newIp, subnetMask=subnetMask)
+        scoutSys.scoutChangeIp(ip=changeApIp[0]["ap_ip"], username=changeApIp[0]["ap_ssh_username"], \
+            password=self.encryption(input=changeApIp[0]["ap_ssh_password"], action="decrypt"), newIp=newIp, subnetMask=subnetMask)
 
         # Commit changes to MariaDB backend
         self.modify(id=id, ip=newIp, subnetMask=subnetMask)
@@ -256,8 +258,8 @@ class AccessPoint(CardinalEnv):
         changeApHostname = self.info(id=id, secrets=True)
 
         # Invoke scout to execute change IP operation
-        sys.scoutChangeName(ip=changeApHostname[0]["ap_ip"], username=changeApHostname[0]["ap_ssh_username"], \
-        password=self.encryption(input=changeApHostname[0]["ap_ssh_password"], action="decrypt"), apName=hostname)
+        scoutSys.scoutChangeName(ip=changeApHostname[0]["ap_ip"], username=changeApHostname[0]["ap_ssh_username"], \
+            password=self.encryption(input=changeApHostname[0]["ap_ssh_password"], action="decrypt"), apName=hostname)
 
         # Commit changes to MariaDB backend
         self.modify(id=id, name=hostname)
@@ -270,8 +272,8 @@ class AccessPoint(CardinalEnv):
         tftpInfo = self.info(id=id, secrets=True)
 
         # Invoke scout to execute change IP operation
-        sys.scoutTftpBackup(ip=tftpInfo[0]["ap_ip"], username=tftpInfo[0]["ap_ssh_username"], \
-        password=self.encryption(input=tftpInfo[0]["ap_ssh_password"], action="decrypt"), tftpIp=tftpIp)
+        scoutSys.scoutTftpBackup(ip=tftpInfo[0]["ap_ip"], username=tftpInfo[0]["ap_ssh_username"], \
+            password=self.encryption(input=tftpInfo[0]["ap_ssh_password"], action="decrypt"), tftpIp=tftpIp)
 
     def manageHttp(self, id, status):
         '''
@@ -282,12 +284,12 @@ class AccessPoint(CardinalEnv):
 
         if status == "enable":
             # Invoke scout to execute enable HTTP operation
-            sys.scoutEnableHttp(ip=httpInfo[0]["ap_ip"], username=httpInfo[0]["ap_ssh_username"], \
-            password=self.encryption(input=httpInfo[0]["ap_ssh_password"], action="decrypt"))
+            scoutSys.scoutEnableHttp(ip=httpInfo[0]["ap_ip"], username=httpInfo[0]["ap_ssh_username"], \
+                password=self.encryption(input=httpInfo[0]["ap_ssh_password"], action="decrypt"))
         elif status == "disable":
             # Invoke scout to execute disable HTTP operation
-            sys.scoutDisableHttp(ip=httpInfo[0]["ap_ip"], username=httpInfo[0]["ap_ssh_username"], \
-            password=self.encryption(input=httpInfo[0]["ap_ssh_password"], action="decrypt"))
+            scoutSys.scoutDisableHttp(ip=httpInfo[0]["ap_ip"], username=httpInfo[0]["ap_ssh_username"], \
+                password=self.encryption(input=httpInfo[0]["ap_ssh_password"], action="decrypt"))
         else:
             return "ERROR: Please select either enable or disable for HTTP operation status."
 
@@ -300,12 +302,12 @@ class AccessPoint(CardinalEnv):
 
         if status == "enable":
             # Invoke scout to execute enable SNMP operation
-            sys.scoutEnableSnmp(ip=snmpInfo[0]["ap_ip"], username=snmpInfo[0]["ap_ssh_username"], \
-            password=self.encryption(input=snmpInfo[0]["ap_ssh_password"], action="decrypt"), snmp=self.encryption(input=snmpInfo[0]["ap_snmp"], action="decrypt"))
+            scoutSys.scoutEnableSnmp(ip=snmpInfo[0]["ap_ip"], username=snmpInfo[0]["ap_ssh_username"], \
+                password=self.encryption(input=snmpInfo[0]["ap_ssh_password"], action="decrypt"), snmp=self.encryption(input=snmpInfo[0]["ap_snmp"], action="decrypt"))
         elif status == "disable":
             # Invoke scout to execute disable SNMP operation
-            sys.scoutDisableSnmp(ip=snmpInfo[0]["ap_ip"], username=snmpInfo[0]["ap_ssh_username"], \
-            password=self.encryption(input=snmpInfo[0]["ap_ssh_password"], action="decrypt"))
+            scoutSys.scoutDisableSnmp(ip=snmpInfo[0]["ap_ip"], username=snmpInfo[0]["ap_ssh_username"], \
+                password=self.encryption(input=snmpInfo[0]["ap_ssh_password"], action="decrypt"))
         else:
             return "ERROR: Please select either enable or disable for SNMP operation status."
 
@@ -320,10 +322,10 @@ class AccessPoint(CardinalEnv):
         ssidInfo = Ssid24Ghz().info(id=ssidId, secrets=True)
 
         # Invoke scout to execute enable HTTP operation
-        ssid.scoutCreateSsid24(ip=apInfo[0]["ap_ip"], username=apInfo[0]["ap_ssh_username"], \
-        password=self.encryption(input=apInfo[0]["ap_ssh_password"], action="decrypt"), ssid=ssidInfo[0]["ap_ssid_name"], \
-        wpa2Pass=self.encryption(input=ssidInfo[0]["ap_ssid_wpa2"], action="decrypt"), vlan=ssidInfo[0]["ap_ssid_vlan"], \
-        bridgeGroup=ssidInfo[0]["ap_ssid_bridge_id"], radioSub=ssidInfo[0]["ap_ssid_radio_id"], gigaSub=ssidInfo[0]["ap_ssid_ethernet_id"])
+        scoutSsid.scoutCreateSsid24(ip=apInfo[0]["ap_ip"], username=apInfo[0]["ap_ssh_username"], \
+            password=self.encryption(input=apInfo[0]["ap_ssh_password"], action="decrypt"), ssid=ssidInfo[0]["ap_ssid_name"], \
+            wpa2Pass=self.encryption(input=ssidInfo[0]["ap_ssid_wpa2"], action="decrypt"), vlan=ssidInfo[0]["ap_ssid_vlan"], \
+            bridgeGroup=ssidInfo[0]["ap_ssid_bridge_id"], radioSub=ssidInfo[0]["ap_ssid_radio_id"], gigaSub=ssidInfo[0]["ap_ssid_ethernet_id"])
 
     def deploy5GhzSsid(self, id, ssidId):
         '''
@@ -336,10 +338,10 @@ class AccessPoint(CardinalEnv):
         ssidInfo = Ssid5Ghz().info(id=ssidId, secrets=True)
 
         # Invoke scout to execute enable HTTP operation
-        ssid.scoutCreateSsid5(ip=apInfo[0]["ap_ip"], username=apInfo[0]["ap_ssh_username"], \
-        password=self.encryption(input=apInfo[0]["ap_ssh_password"], action="decrypt"), ssid=ssidInfo[0]["ap_ssid_name"], \
-        wpa2Pass=self.encryption(input=ssidInfo[0]["ap_ssid_wpa2"], action="decrypt"), vlan=ssidInfo[0]["ap_ssid_vlan"], \
-        bridgeGroup=ssidInfo[0]["ap_ssid_bridge_id"], radioSub=ssidInfo[0]["ap_ssid_radio_id"], gigaSub=ssidInfo[0]["ap_ssid_ethernet_id"])
+        scoutSsid.scoutCreateSsid5(ip=apInfo[0]["ap_ip"], username=apInfo[0]["ap_ssh_username"], \
+            password=self.encryption(input=apInfo[0]["ap_ssh_password"], action="decrypt"), ssid=ssidInfo[0]["ap_ssid_name"], \
+            wpa2Pass=self.encryption(input=ssidInfo[0]["ap_ssid_wpa2"], action="decrypt"), vlan=ssidInfo[0]["ap_ssid_vlan"], \
+            bridgeGroup=ssidInfo[0]["ap_ssid_bridge_id"], radioSub=ssidInfo[0]["ap_ssid_radio_id"], gigaSub=ssidInfo[0]["ap_ssid_ethernet_id"])
 
     def deploy24GhzRadiusSsid(self, id, ssidId):
         '''
@@ -352,12 +354,12 @@ class AccessPoint(CardinalEnv):
         ssidInfo = Ssid24GhzRadius().info(id=ssidId, secrets=True)
 
         # Invoke scout to execute enable HTTP operation
-        ssid.scoutCreateSsid24Radius(ip=apInfo[0]["ap_ip"], username=apInfo[0]["ap_ssh_username"], \
-        password=self.encryption(input=apInfo[0]["ap_ssh_password"], action="decrypt"), ssid=ssidInfo[0]["ap_ssid_name"], \
-        vlan=ssidInfo[0]["ap_ssid_vlan"], bridgeGroup=ssidInfo[0]["ap_ssid_bridge_id"], radioSub=ssidInfo[0]["ap_ssid_radio_id"], \
-        gigaSub=ssidInfo[0]["ap_ssid_ethernet_id"], radiusIp=ssidInfo[0]["ap_ssid_radius_ip"], sharedSecret=self.encryption(input=apInfo[0]["ap_ssid_radius_secret"], action="decrypt"), \
-        authPort=ssidInfo[0]["ap_ssid_authorization_port"], acctPort=ssidInfo[0]["ap_ssid_accounting_port"], radiusTimeout=ssidInfo[0]["ap_ssid_radius_timeout"], \
-        radiusGroup=ssidInfo[0]["ap_ssid_radius_group"], methodList=ssidInfo[0]["ap_ssid_radius_method_list"])
+        scoutSsid.scoutCreateSsid24Radius(ip=apInfo[0]["ap_ip"], username=apInfo[0]["ap_ssh_username"], \
+            password=self.encryption(input=apInfo[0]["ap_ssh_password"], action="decrypt"), ssid=ssidInfo[0]["ap_ssid_name"], \
+            vlan=ssidInfo[0]["ap_ssid_vlan"], bridgeGroup=ssidInfo[0]["ap_ssid_bridge_id"], radioSub=ssidInfo[0]["ap_ssid_radio_id"], \
+            gigaSub=ssidInfo[0]["ap_ssid_ethernet_id"], radiusIp=ssidInfo[0]["ap_ssid_radius_ip"], sharedSecret=self.encryption(input=apInfo[0]["ap_ssid_radius_secret"], action="decrypt"), \
+            authPort=ssidInfo[0]["ap_ssid_authorization_port"], acctPort=ssidInfo[0]["ap_ssid_accounting_port"], radiusTimeout=ssidInfo[0]["ap_ssid_radius_timeout"], \
+            radiusGroup=ssidInfo[0]["ap_ssid_radius_group"], methodList=ssidInfo[0]["ap_ssid_radius_method_list"])
 
     def deploy5GhzRadiusSsid(self, id, ssidId):
         '''
@@ -370,12 +372,12 @@ class AccessPoint(CardinalEnv):
         ssidInfo = Ssid5GhzRadius().info(id=ssidId, secrets=True)
 
         # Invoke scout to execute enable HTTP operation
-        ssid.scoutCreateSsid5Radius(ip=apInfo[0]["ap_ip"], username=apInfo[0]["ap_ssh_username"], \
-        password=self.encryption(input=apInfo[0]["ap_ssh_password"], action="decrypt"), ssid=ssidInfo[0]["ap_ssid_name"], \
-        vlan=ssidInfo[0]["ap_ssid_vlan"], bridgeGroup=ssidInfo[0]["ap_ssid_bridge_id"], radioSub=ssidInfo[0]["ap_ssid_radio_id"], \
-        gigaSub=ssidInfo[0]["ap_ssid_ethernet_id"], radiusIp=ssidInfo[0]["ap_ssid_radius_ip"], sharedSecret=self.encryption(input=apInfo[0]["ap_ssid_radius_secret"], action="decrypt"), \
-        authPort=ssidInfo[0]["ap_ssid_authorization_port"], acctPort=ssidInfo[0]["ap_ssid_accounting_port"], radiusTimeout=ssidInfo[0]["ap_ssid_radius_timeout"], \
-        radiusGroup=ssidInfo[0]["ap_ssid_radius_group"], methodList=ssidInfo[0]["ap_ssid_radius_method_list"])
+        scoutSsid.scoutCreateSsid5Radius(ip=apInfo[0]["ap_ip"], username=apInfo[0]["ap_ssh_username"], \
+            password=self.encryption(input=apInfo[0]["ap_ssh_password"], action="decrypt"), ssid=ssidInfo[0]["ap_ssid_name"], \
+            vlan=ssidInfo[0]["ap_ssid_vlan"], bridgeGroup=ssidInfo[0]["ap_ssid_bridge_id"], radioSub=ssidInfo[0]["ap_ssid_radio_id"], \
+            gigaSub=ssidInfo[0]["ap_ssid_ethernet_id"], radiusIp=ssidInfo[0]["ap_ssid_radius_ip"], sharedSecret=self.encryption(input=apInfo[0]["ap_ssid_radius_secret"], action="decrypt"), \
+            authPort=ssidInfo[0]["ap_ssid_authorization_port"], acctPort=ssidInfo[0]["ap_ssid_accounting_port"], radiusTimeout=ssidInfo[0]["ap_ssid_radius_timeout"], \
+            radiusGroup=ssidInfo[0]["ap_ssid_radius_group"], methodList=ssidInfo[0]["ap_ssid_radius_method_list"])
 
 
     def remove24GhzSsid(self, id, ssidId):
@@ -389,9 +391,9 @@ class AccessPoint(CardinalEnv):
         ssidInfo = Ssid24Ghz().info(id=ssidId, secrets=True)
 
         # Invoke scout to execute enable HTTP operation
-        ssid.scoutDeleteSsid24(ip=apInfo[0]["ap_ip"], username=apInfo[0]["ap_ssh_username"], \
-        password=self.encryption(input=apInfo[0]["ap_ssh_password"], action="decrypt"), ssid=ssidInfo[0]["ap_ssid_name"], \
-        vlan=ssidInfo[0]["ap_ssid_vlan"], radioSub=ssidInfo[0]["ap_ssid_radio_id"], gigaSub=ssidInfo[0]["ap_ssid_ethernet_id"])
+        scoutSsid.scoutDeleteSsid24(ip=apInfo[0]["ap_ip"], username=apInfo[0]["ap_ssh_username"], \
+            password=self.encryption(input=apInfo[0]["ap_ssh_password"], action="decrypt"), ssid=ssidInfo[0]["ap_ssid_name"], \
+            vlan=ssidInfo[0]["ap_ssid_vlan"], radioSub=ssidInfo[0]["ap_ssid_radio_id"], gigaSub=ssidInfo[0]["ap_ssid_ethernet_id"])
 
     def remove5GhzSsid(self, id, ssidId):
         '''
@@ -404,9 +406,9 @@ class AccessPoint(CardinalEnv):
         ssidInfo = Ssid5Ghz().info(id=ssidId, secrets=True)
 
         # Invoke scout to execute enable HTTP operation
-        ssid.scoutDeleteSsid5(ip=apInfo[0]["ap_ip"], username=apInfo[0]["ap_ssh_username"], \
-        password=self.encryption(input=apInfo[0]["ap_ssh_password"], action="decrypt"), ssid=ssidInfo[0]["ap_ssid_name"], \
-        vlan=ssidInfo[0]["ap_ssid_vlan"], radioSub=ssidInfo[0]["ap_ssid_radio_id"], gigaSub=ssidInfo[0]["ap_ssid_ethernet_id"])
+        scoutSsid.scoutDeleteSsid5(ip=apInfo[0]["ap_ip"], username=apInfo[0]["ap_ssh_username"], \
+            password=self.encryption(input=apInfo[0]["ap_ssh_password"], action="decrypt"), ssid=ssidInfo[0]["ap_ssid_name"], \
+            vlan=ssidInfo[0]["ap_ssid_vlan"], radioSub=ssidInfo[0]["ap_ssid_radio_id"], gigaSub=ssidInfo[0]["ap_ssid_ethernet_id"])
 
     def remove24GhzRadiusSsid(self, id, ssidId):
         '''
@@ -419,9 +421,9 @@ class AccessPoint(CardinalEnv):
         ssidInfo = Ssid24GhzRadius().info(id=ssidId, secrets=True)
 
         # Invoke scout to execute enable HTTP operation
-        ssid.scoutDeleteSsid24(ip=apInfo[0]["ap_ip"], username=apInfo[0]["ap_ssh_username"], \
-        password=self.encryption(input=apInfo[0]["ap_ssh_password"], action="decrypt"), ssid=ssidInfo[0]["ap_ssid_name"], \
-        vlan=ssidInfo[0]["ap_ssid_vlan"], radioSub=ssidInfo[0]["ap_ssid_radio_id"], gigaSub=ssidInfo[0]["ap_ssid_ethernet_id"])
+        scoutSsid.scoutDeleteSsid24(ip=apInfo[0]["ap_ip"], username=apInfo[0]["ap_ssh_username"], \
+            password=self.encryption(input=apInfo[0]["ap_ssh_password"], action="decrypt"), ssid=ssidInfo[0]["ap_ssid_name"], \
+            vlan=ssidInfo[0]["ap_ssid_vlan"], radioSub=ssidInfo[0]["ap_ssid_radio_id"], gigaSub=ssidInfo[0]["ap_ssid_ethernet_id"])
 
     def remove5GhzRadiusSsid(self, id, ssidId):
         '''
@@ -434,9 +436,9 @@ class AccessPoint(CardinalEnv):
         ssidInfo = Ssid5GhzRadius().info(id=ssidId, secrets=True)
 
         # Invoke scout to execute enable HTTP operation
-        ssid.scoutDeleteSsid5(ip=apInfo[0]["ap_ip"], username=apInfo[0]["ap_ssh_username"], \
-        password=self.encryption(input=apInfo[0]["ap_ssh_password"], action="decrypt"), ssid=ssidInfo[0]["ap_ssid_name"], \
-        vlan=ssidInfo[0]["ap_ssid_vlan"], radioSub=ssidInfo[0]["ap_ssid_radio_id"], gigaSub=ssidInfo[0]["ap_ssid_ethernet_id"])
+        scoutSsid.scoutDeleteSsid5(ip=apInfo[0]["ap_ip"], username=apInfo[0]["ap_ssh_username"], \
+            password=self.encryption(input=apInfo[0]["ap_ssh_password"], action="decrypt"), ssid=ssidInfo[0]["ap_ssid_name"], \
+            vlan=ssidInfo[0]["ap_ssid_vlan"], radioSub=ssidInfo[0]["ap_ssid_radio_id"], gigaSub=ssidInfo[0]["ap_ssid_ethernet_id"])
 
     def fetchInfo(self, id):
         '''
@@ -448,8 +450,8 @@ class AccessPoint(CardinalEnv):
         fetchInfo = self.info(id=id, secrets=True)
 
         # Invoke scout to execute change IP operation
-        apInfo = info.fetcher(ip=fetchInfo[0]["ap_ip"], username=fetchInfo[0]["ap_ssh_username"], \
-        password=self.encryption(input=fetchInfo[0]["ap_ssh_password"], action="decrypt"))
+        apInfo = scoutInfo.fetcher(ip=fetchInfo[0]["ap_ip"], username=fetchInfo[0]["ap_ssh_username"], \
+            password=self.encryption(input=fetchInfo[0]["ap_ssh_password"], action="decrypt"))
 
         # Commit changes to MariaDB backend
         apMacAddr = apInfo[0]
